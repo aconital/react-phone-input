@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 
 let allCountries = countryData.allCountries;
 
-let isModernBrowser = (document) ? Boolean(document.createElement('input').setSelectionRange) : false;
+let isModernBrowser = (typeof document != 'undefined') ? Boolean(document.createElement('input').setSelectionRange) : false;
 
 var style = require('./react-phone-input-style.less');
 
@@ -135,11 +135,11 @@ class ReactPhoneInput extends React.Component {
   }
 
   componentDidMount() {
-    if(document) document.addEventListener('keydown', this.handleKeydown);
+    if(typeof document != 'undefined') document.addEventListener('keydown', this.handleKeydown);
   }
 
   componentWillUnmount() {
-    if(document) document.removeEventListener('keydown', this.handleKeydown);
+    if(typeof document != 'undefined') document.removeEventListener('keydown', this.handleKeydown);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -155,7 +155,7 @@ class ReactPhoneInput extends React.Component {
     let container = ReactDOM.findDOMNode(this.refs.flagDropdownList);
 
     if(!container) return;
-    let bodyScrollTop = (document) ? document.body.scrollTop : 0
+    let bodyScrollTop = (typeof document != 'undefined') ? document.body.scrollTop : 0
     let containerHeight = container.offsetHeight;
     let containerOffset = container.getBoundingClientRect();
     let containerTop = containerOffset.top + bodyScrollTop;
@@ -247,7 +247,7 @@ class ReactPhoneInput extends React.Component {
   handleInput(event) {
 
     let formattedNumber = '+', newSelectedCountry = this.state.selectedCountry,
-			freezeSelection = this.state.freezeSelection;
+      freezeSelection = this.state.freezeSelection;
 
     //Does not exceed 16 digit phone number limit
     if(event.target.value.replace(/\D/g, '').length > 16) {
@@ -272,7 +272,7 @@ class ReactPhoneInput extends React.Component {
 
       // we don't need to send the whole number to guess the country... only the first 6 characters are enough
       // the guess country function can then use memoization much more effectively since the set of input it
-			// gets has drastically reduced
+      // gets has drastically reduced
       if(!this.state.freezeSelection || this.state.selectedCountry.dialCode.length > inputNumber.length) {
         newSelectedCountry = this.guessSelectedCountry(inputNumber.substring(0, 6), this.state.onlyCountries, this.state.defaultCountry);
         freezeSelection = false;
@@ -362,7 +362,7 @@ class ReactPhoneInput extends React.Component {
   searchCountry() {
     const probableCandidate = this._searchCountry(this.state.queryString) || this.state.onlyCountries[0];
     const probableCandidateIndex = findIndex(this.state.onlyCountries, probableCandidate) +
-			this.state.preferredCountries.length;
+      this.state.preferredCountries.length;
 
     this.scrollTo(this.getElement(probableCandidateIndex), true);
 
@@ -433,31 +433,31 @@ class ReactPhoneInput extends React.Component {
   }
 
   getCountryDropDownList() {
-		let countryDropDownList = map(this.state.preferredCountries.concat(this.state.onlyCountries), (country, index) => {
-			let itemClasses = classNames({
-				country: true,
-				preferred: country.iso2 === 'us' || country.iso2 === 'gb',
-				active: country.iso2 === 'us',
-				highlight: this.state.highlightCountryIndex === index
-			});
+    let countryDropDownList = map(this.state.preferredCountries.concat(this.state.onlyCountries), (country, index) => {
+      let itemClasses = classNames({
+        country: true,
+        preferred: country.iso2 === 'us' || country.iso2 === 'gb',
+        active: country.iso2 === 'us',
+        highlight: this.state.highlightCountryIndex === index
+      });
 
-			let inputFlagClasses = `flag ${country.iso2}`;
+      let inputFlagClasses = `flag ${country.iso2}`;
 
-			return (
-				<li
-					ref={`flag_no_${index}`}
-					key={`flag_no_${index}`}
-					data-flag-key={`flag_no_${index}`}
-					className={itemClasses}
-					data-dial-code="1"
-					data-country-code={country.iso2}
-					onClick={this.handleFlagItemClick.bind(this, country)}>
-					<div className={inputFlagClasses} />
-					<span className='country-name'>{country.name}</span>
-					<span className='dial-code'>{'+' + country.dialCode}</span>
-				</li>
-			);
-		});
+      return (
+        <li
+          ref={`flag_no_${index}`}
+          key={`flag_no_${index}`}
+          data-flag-key={`flag_no_${index}`}
+          className={itemClasses}
+          data-dial-code="1"
+          data-country-code={country.iso2}
+          onClick={this.handleFlagItemClick.bind(this, country)}>
+          <div className={inputFlagClasses} />
+          <span className='country-name'>{country.name}</span>
+          <span className='dial-code'>{'+' + country.dialCode}</span>
+        </li>
+      );
+    });
 
     const dashedLi = (<li key={'dashes'} className='divider' />);
     // let's insert a dashed line in between preffered countries and the rest
@@ -534,24 +534,24 @@ ReactPhoneInput.prototype._searchCountry = memoize(function(queryString){
 ReactPhoneInput.prototype.guessSelectedCountry = memoize(function(inputNumber, onlyCountries, defaultCountry) {
   var secondBestGuess = find(allCountries, {iso2: defaultCountry}) || onlyCountries[0];
   if(trim(inputNumber) !== '') {
-		var bestGuess = reduce(onlyCountries, function(selectedCountry, country) {
-			if(startsWith(inputNumber, country.dialCode)) {
-				if(country.dialCode.length > selectedCountry.dialCode.length) {
-					return country;
-				}
-				if(country.dialCode.length === selectedCountry.dialCode.length && country.priority < selectedCountry.priority) {
-					return country;
-				}
-			}
+    var bestGuess = reduce(onlyCountries, function(selectedCountry, country) {
+      if(startsWith(inputNumber, country.dialCode)) {
+        if(country.dialCode.length > selectedCountry.dialCode.length) {
+          return country;
+        }
+        if(country.dialCode.length === selectedCountry.dialCode.length && country.priority < selectedCountry.priority) {
+          return country;
+        }
+      }
 
-			return selectedCountry;
-		}, {dialCode: '', priority: 10001}, this);
+      return selectedCountry;
+    }, {dialCode: '', priority: 10001}, this);
   } else {
-		return secondBestGuess;
+    return secondBestGuess;
   }
 
   if(!bestGuess.name) {
-		return secondBestGuess;
+    return secondBestGuess;
   }
 
   return bestGuess;
@@ -584,7 +584,7 @@ export default ReactPhoneInput;
 
 if (__DEV__) {
   const ReactDOM = require('react-dom');
-  let containerDom = (document) ? document.getElementById('content') : null;
+  let containerDom = (typeof document != 'undefined') ? document.getElementById('content') : null;
   ReactDOM.render(
     <ReactPhoneInput defaultCountry='us' preferredCountries={['us', 'de']} excludeCountries={'in'}/>,
     containerDom);
