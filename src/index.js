@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 
 let allCountries = countryData.allCountries;
 
-let isModernBrowser = Boolean(document.createElement('input').setSelectionRange);
+let isModernBrowser = (document) ? Boolean(document.createElement('input').setSelectionRange) : false;
 
 var style = require('./react-phone-input-style.less');
 
@@ -135,11 +135,11 @@ class ReactPhoneInput extends React.Component {
   }
 
   componentDidMount() {
-    document.addEventListener('keydown', this.handleKeydown);
+    if(document) document.addEventListener('keydown', this.handleKeydown);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeydown);
+    if(document) document.removeEventListener('keydown', this.handleKeydown);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -155,17 +155,17 @@ class ReactPhoneInput extends React.Component {
     let container = ReactDOM.findDOMNode(this.refs.flagDropdownList);
 
     if(!container) return;
-
+    let bodyScrollTop = (document) ? document.body.scrollTop : 0
     let containerHeight = container.offsetHeight;
     let containerOffset = container.getBoundingClientRect();
-    let containerTop = containerOffset.top + document.body.scrollTop;
+    let containerTop = containerOffset.top + bodyScrollTop;
     let containerBottom = containerTop + containerHeight;
 
     let element = country;
     let elementOffset = element.getBoundingClientRect();
 
     let elementHeight = element.offsetHeight;
-    let elementTop = elementOffset.top + document.body.scrollTop;
+    let elementTop = elementOffset.top + bodyScrollTop;
     let elementBottom = elementTop + elementHeight;
     let newScrollTop = elementTop - containerTop + container.scrollTop;
     let middleOffset = (containerHeight / 2) - (elementHeight / 2);
@@ -584,10 +584,11 @@ export default ReactPhoneInput;
 
 if (__DEV__) {
   const ReactDOM = require('react-dom');
+  let containerDom = (document) ? document.getElementById('content') : null;
   ReactDOM.render(
     <ReactPhoneInput defaultCountry='us' preferredCountries={['us', 'de']} excludeCountries={'in'}/>,
-    document.getElementById('content'));
+    containerDom);
   ReactDOM.render(
       <ReactPhoneInput defaultCountry='de' preferredCountries={['it']}/>,
-      document.getElementById('content'));
+      containerDom);
 }
